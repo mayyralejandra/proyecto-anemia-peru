@@ -1,0 +1,48 @@
+# ============================================
+# 1. LIBRERÍAS
+# ============================================
+library(dplyr)
+library(readr)
+library(lubridate)
+library(stringr)
+
+# ============================================
+# 2. CARGAR DATA
+# ============================================
+df <- read_csv("Niños HUANCAVELICA Hb.csv") %>% distinct()
+
+# ============================================
+# 3. LIMPIEZA
+# ============================================
+df <- df %>%
+  mutate(
+    FechaAtencion = as.Date(parse_date_time(FechaAtencion, orders = c("mdy", "dmy", "ymd"))),
+    EdadMeses = round(EdadMeses, 1),
+    Sexo = str_trim(Sexo),
+    UbigeoPN = str_pad(str_trim(as.character(UbigeoPN)), 6, pad = "0"),
+    Renipress = str_pad(str_trim(as.character(Renipress)), 8, pad = "0")
+  ) %>%
+  filter(!is.na(FechaAtencion))
+
+# ============================================
+# 4. VARIABLE OBJETIVO
+# ============================================
+df <- df %>%
+  mutate(
+    anemia_bin = ifelse(Dx_anemia == "Normal", 0, 1)
+  )
+
+df_model <- df %>%
+  select(
+    anemia_bin,
+    Sexo,
+    EdadMeses,
+    DepartamentoPN,
+    ProvinciaPN,
+    DistritoPN,
+    SIS,
+    Qaliwarma,
+    Juntos
+  )
+
+table(df_model$anemia_bin)

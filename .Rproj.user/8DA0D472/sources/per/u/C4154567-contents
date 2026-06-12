@@ -1,0 +1,62 @@
+# ============================================
+# 1. LIBRERÍAS
+# ============================================
+library(dplyr)
+library(readr)
+library(lubridate)
+library(stringr)
+
+# ============================================
+# 2. CARGAR DATASETS
+# ============================================
+df1 <- read_csv("Niños HUANCAVELICA Hb.csv") %>% distinct()
+df2 <- read_csv("Niños HUANCAVELICA  Pt.csv") %>% distinct()
+
+# ============================================
+# 3. LIMPIEZA BÁSICA
+# ============================================
+
+# --- Dataset 1 (Anemia) ---
+df1 <- df1 %>%
+  mutate(
+    # Convertimos a fecha y luego a Date (sin hora)
+    FechaAtencion = as.Date(parse_date_time(FechaAtencion, orders = c("mdy", "dmy", "ymd"))),
+    FechaNacimiento = as.Date(parse_date_time(FechaNacimiento, orders = c("mdy", "dmy", "ymd"))),
+    EdadMeses = round(as.numeric(EdadMeses), 1),
+    Sexo = str_trim(Sexo),
+    # Aseguramos que el Ubigeo tenga 6 dígitos y Renipress 8 (o 5 según el estándar que veas)
+    UbigeoPN = str_pad(str_trim(as.character(UbigeoPN)), 6, pad = "0"),
+    Renipress = str_pad(str_trim(as.character(Renipress)), 8, pad = "0")
+  )
+
+# --- Dataset 2 (Antropometría) ---
+df2 <- df2 %>%
+  mutate(
+    FechaAtencion = as.Date(parse_date_time(FechaAtencion, orders = c("mdy", "dmy", "ymd"))),
+    FechaNacimiento = as.Date(parse_date_time(FechaNacimiento, orders = c("mdy", "dmy", "ymd"))),
+    EdadMeses = round(as.numeric(EdadMeses), 1),
+    Sexo = str_trim(Sexo),
+    UbigeoPN = str_pad(str_trim(as.character(UbigeoPN)), 6, pad = "0"),
+    Renipress = str_pad(str_trim(as.character(Renipress)), 8, pad = "0")
+  )
+
+# Eliminar filas donde la fecha falló
+df1 <- df1 %>% filter(!is.na(FechaAtencion))
+df2 <- df2 %>% filter(!is.na(FechaAtencion))
+
+# 1. Definir llaves
+llaves <- c("Renipress", "Sexo", "FechaNacimiento", "FechaAtencion", "EdadMeses", "UbigeoPN")
+
+# 2. Realizar el Join (asegúrate de haber corrido la limpieza antes)
+df_final <- inner_join(df1, df2, by = llaves)
+
+# 3. Control de calidad
+cat("Registros en Anemia:", nrow(df1), "\n")
+cat("Registros en Antro:", nrow(df2), "\n")
+cat("Registros después del Join:", nrow(df_final), "\n")
+
+print("Distribución de Anemia en Data Original:")
+table(df1$Dx_anemia)
+
+print("Distribución de Anemia en Data Unida:")
+table(df_final$Dx_anemia)

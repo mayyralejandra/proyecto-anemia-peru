@@ -1,0 +1,43 @@
+# ============================================================
+# PROYECTO SIEN - PREDICCIÓN DE ANEMIA EN NIÑOS < 5 AÑOS
+# Script 00: Instalación y carga de librerías
+# Fuente: INS/CENAN - Sistema de Información del Estado Nutricional
+# ============================================================
+
+paquetes <- c(
+  # Manipulación de datos
+  "tidyverse", "janitor", "lubridate", "skimr",
+  # Visualización
+  "ggplot2", "ggcorrplot", "patchwork", "scales", "viridis",
+  # Machine Learning
+  "tidymodels", "caret",
+  # Modelos específicos
+  "ranger",        # Random Forest
+  "xgboost",       # XGBoost
+  "nnet",          # Redes neuronales / multinomial
+  "e1071",         # SVM / Naive Bayes
+  "glmnet",        # Regresión logística regularizada
+  "rpart",         # Árbol de decisión
+  "rpart.plot",    # Visualización árbol
+  # Métricas y validación
+  "yardstick", "probably",
+  # Importancia de variables
+  "vip",
+  # Desbalance de clases
+  "themis",
+  # Guardar modelos
+  "butcher", "bundle",
+  # Shiny
+  "shiny", "shinydashboard", "shinyWidgets", "plotly", "DT"
+)
+
+instalar_si_falta <- function(pkg) {
+  if (!requireNamespace(pkg, quietly = TRUE)) {
+    install.packages(pkg, dependencies = TRUE)
+  }
+}
+
+invisible(lapply(paquetes, instalar_si_falta))
+invisible(lapply(paquetes, library, character.only = TRUE))
+
+cat("✅ Todas las librerías cargadas correctamente.\n")
